@@ -4,6 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SNOWN RESORT — 눈으로 들어가는 문</title>
+<meta name="description" content="주머니에 넣어둔 채로 타기만 해도 경로·속도·고도가 쌓이는 스키/스노보드 기록 앱 SNOWN. 스키장 12곳을 걸어 다니며 앱 기능을 직접 만나보세요.">
+<meta name="theme-color" content="#0C1017">
+<!-- 배포 도메인이 snown.kr 이 아니면 아래 4곳의 주소를 실제 도메인으로 바꿔주세요 -->
+<link rel="canonical" href="https://snown-com.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SNOWN">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="SNOWN — 설상 스포츠의 모든 순간">
+<meta property="og:description" content="주머니에 넣어둔 채로 타기만 해도 경로·속도·고도가 쌓이는 스키/스노보드 기록 앱. 눈 위의 하루를 그대로 남깁니다.">
+<meta property="og:url" content="https://snown-com.vercel.app/">
+<meta property="og:image" content="https://snown-com.vercel.app/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="눈 덮인 SNOWN 스키하우스와 주차장 전경">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SNOWN — 설상 스포츠의 모든 순간">
+<meta name="twitter:description" content="타기만 해도 경로·속도·고도가 쌓이는 스키/스노보드 기록 앱.">
+<meta name="twitter:image" content="https://snown-com.vercel.app/og-image.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -3992,7 +4012,7 @@ l-68 71 0 113 c0 122 -2 128 -82 262 -13 20 -34 60 -48 87 -25 50 -102 131
     <div class="intro__dawn"></div><div class="intro__floor"></div>
 
     <div class="intro__copy">
-      <h2 class="intro__title reveal">이번 시즌,<br><em>모든 라이딩을 기록하다</em></h2>
+      <h1 class="intro__title reveal">이번 시즌,<br><em>모든 라이딩을 기록하다</em></h1>
       <p class="intro__lead reveal">그냥 즐기세요. 라이딩 데이터는 SNOWN이 기록할게요.</p>
       <div class="intro__actions reveal">
         <button class="btn pri is-hoverable" data-sn="dl">
@@ -5577,6 +5597,15 @@ document.querySelectorAll('#navrow a').forEach(a=>{
   });
 });
 addEventListener('keydown',e=>{
+  /* 게임 중에는 게임 조작이 우선 (a/s 가 이동키와 겹친다) */
+  if(G)return;
+  /* 조합키는 브라우저 단축키 (Ctrl+A 등) */
+  if(e.ctrlKey||e.metaKey||e.altKey||e.isComposing)return;
+  /* 입력 중에는 단축키를 막는다 : 제안·문의 폼에 영문을 못 치는 문제 */
+  const _t=e.target;
+  if(_t&&(_t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(_t.tagName)))return;
+  /* 스플래시·앱 소개·푸터 문서를 보는 중엔 씬 단축키를 쓰지 않는다 (Escape 는 예외) */
+  if(e.key!=='Escape'&&(!entered||pgCur||preEl0.classList.contains('revisit')))return;
   if(e.key==='h'||e.key==='H'){
     showAll=!showAll;
     document.querySelectorAll('.hs').forEach(p=>p.classList.toggle('show',showAll));
@@ -5947,7 +5976,13 @@ homeBtn.addEventListener('click',()=>{
   const asc=document.getElementById('abscroll');if(asc)asc.classList.remove('hide');
   setCursor(null);
 });
-addEventListener('keydown',e=>{if(e.key==='Enter'&&enter.classList.contains('on'))go()});
+/* Enter : 스플래시에서 스키장으로 진입 (버튼·입력에 포커스가 있을 땐 제외) */
+addEventListener('keydown',e=>{
+  if(entered||e.key!=='Enter'||e.defaultPrevented||e.isComposing)return;
+  const t=e.target;
+  if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)))return;
+  if(preEl0.classList.contains('ready'))ask.click();
+});
 
 
 
@@ -5992,7 +6027,18 @@ const FBK_SEED=[
  {id:'s13',t:'심박수 기반 체력 리포트',b:'워치 심박이랑 연동해서 하루 라이딩 강도를 보여주면 좋겠습니다.',a:'심박정상',v:87,c:4,s:'review',d:FBK_NOW-86400000*6},
  {id:'s14',t:'렌탈 장비 정보 기록',b:'렌탈샵에서 빌린 보드 스펙을 기록에 남겨두면 다음에 고를 때 참고가 됩니다.',a:'렌탈파',v:64,c:3,s:'review',d:FBK_NOW-86400000*3}
 ];
-const fbkStore=(function(){try{return (window.storage&&typeof window.storage.get==='function')?window.storage:null}catch(e){return null}})();
+const fbkStore=(function(){
+  try{ if(window.storage&&typeof window.storage.get==='function')return window.storage; }catch(e){}
+  /* window.storage 가 없는 일반 브라우저에서는 localStorage 로 대체한다 */
+  try{
+    const probe='__snown_probe__';
+    localStorage.setItem(probe,'1'); localStorage.removeItem(probe);
+    return {
+      get:key=>Promise.resolve({value:localStorage.getItem(key)}),
+      set:(key,value)=>{try{localStorage.setItem(key,value)}catch(e){}return Promise.resolve()}
+    };
+  }catch(e){ return null; }   /* 시크릿 모드 등 저장이 막힌 환경 */
+})();
 let fbk={data:null,mine:[],sort:'hot',filter:'all',show:8,ready:false};
 
 function fbkEsc(s){return String(s||'').replace(/[&<>"']/g,function(c){
